@@ -1,4 +1,4 @@
-import { BadRequestException, Body, HttpException, Injectable, NotFoundException, Post } from '@nestjs/common';
+import { BadRequestException, Body, HttpException, HttpStatus, Injectable, NotFoundException, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './models/user.entity';
@@ -6,33 +6,36 @@ import * as bcrypt from 'bcrypt';
 import { RegisterDto } from 'src/auth/dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
 import {Response , Request} from 'express';
+import { UserCreateDto } from './dto/user-create.dto';
+import { UserUpdateDto } from './dto/user-update.dto';
+import type { UserInterface } from './interfaces/user-service.interface';
 
 @Injectable()
-export class UserService {
+export class UserService implements UserInterface{
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,  
     private jwtService: JwtService
   ) {}
 
   //get all user
-  async all(): Promise<User[]> {
+  public async all(): Promise<User[]> {
     return this.userRepository.find();
   }
 
-  //get one user
-  async findOneById(id : number): Promise<User>{
+  //get one user by id
+  public async findOneById(id : number): Promise<User>{
     try{
        const user = await  this.userRepository.findOneOrFail(id);
-
-       return user;
+       
+        return user;
     }
     catch(err){ 
-       throw err;
+      throw new NotFoundException(`No user found in id ${id}`)
     }
   }
 
   //register user
-  async register(registerDTO: RegisterDto): Promise<User> {
+  public async register(registerDTO: RegisterDto): Promise<User> {
     try {
       if(registerDTO.password === registerDTO.password_confirm){
         const hashed = await bcrypt.hash(registerDTO.password, 12);
@@ -50,7 +53,7 @@ export class UserService {
   }
 
   //authenticate user
-  async loginUser(email, pass , response : Response): Promise<User> {
+  public async loginUser(email, pass , response : Response): Promise<User> {
       try{
         const {password} = pass
         const user = await this.userRepository.findOne(email);
@@ -74,7 +77,7 @@ export class UserService {
   }
  
  // Get authenticated user
-   async getUser(request : Request) : Promise<User> {
+   public async getUser(request : Request) : Promise<User> {
        try{
         const cookie = request.cookies['jwt'];
 
@@ -89,5 +92,48 @@ export class UserService {
        catch(err){
         throw new HttpException(err.message, 500);
        }
+   }
+
+   //Create user
+   public async createUser(userCreateDto : UserCreateDto) : Promise<User> {
+     try{
+      const password = await bcrypt.hash('123456' , 12);
+      
+      const newUser = this.userRepository.create({ ...userCreateDto, password });
+          
+      return  this.userRepository.save(newUser);
+     
+     }
+     catch(err){
+      throw new HttpException("Email already exist." , HttpStatus.NOT_ACCEPTABLE);
+     }
+   }
+
+   //Update user
+  public async updateUser(id : number , data : UserUpdateDto) : Promise<User>{
+      try{
+          const user = await this.findOneById(id);
+
+          user.first_name = data.first_name;
+          user.last_name = data.last_name;
+          user.email = data.email;
+
+          return this.userRepository.save(user);
+      }
+      catch(err){
+        throw new HttpException(err.message , 500);
+      }
+   }
+
+   //delete user
+   public async deleteUser(id : number) : Promise<User>{
+     try{
+          const user = await this.findOneById(id);
+
+          return this.userRepository.remove(user);
+     }
+     catch(err){
+        throw new HttpException(err.message, HttpStatus.OK);
+     }
    }
 }

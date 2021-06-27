@@ -1,18 +1,18 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, HttpException, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
-import { UserService } from 'src/user/user.service';
+import { Body, ClassSerializerInterceptor, Controller, Get, HttpException, Inject, Post, Req, Res, UseGuards, UseInterceptors } from '@nestjs/common';
 import { User } from 'src/user/models/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import {Response , Request} from 'express'
 import { AuthGuard } from './auth.guard';
+import { UserInterface, USERSERVICE_INTERFACE } from 'src/user/interfaces/user-service.interface';
 
 @UseInterceptors(ClassSerializerInterceptor) //Interceptor to remove excluded entity (Password)
 @Controller()
 export class AuthController {
-   constructor(private userService: UserService){}
+   constructor(@Inject(USERSERVICE_INTERFACE) private userInterface: UserInterface){}
    
    @Post('register')
    async register(@Body() body : RegisterDto) : Promise<User> {
-       return this.userService.register(body);
+       return this.userInterface.register(body);
    }
 
    @Post('login')
@@ -21,14 +21,14 @@ export class AuthController {
        @Body('password') password: string,
        @Res({passthrough:true}) response : Response //to send httponly cookie
    ) : Promise<User> {
-      return await this.userService.loginUser({email} , {password} , response);
+      return await this.userInterface.loginUser({email} , {password} , response);
    }
    
    // Get authenticated user 
    @UseGuards(AuthGuard)
    @Get('user')
    async user(@Req() request : Request) : Promise<User>{
-       return this.userService.getUser(request);
+       return this.userInterface.getUser(request);
    }
 
    @UseGuards(AuthGuard) // Restrict access to the routes
@@ -44,4 +44,4 @@ export class AuthController {
          throw new HttpException(err.message , 500);
        }
    }
-}
+} 

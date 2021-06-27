@@ -1,19 +1,23 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CommonModule } from 'src/common/jwt-common.module';
+import { USERSERVICE_INTERFACE } from './interfaces/user-service.interface';
 import { User } from './models/user.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-
 @Module({
   imports:[
     TypeOrmModule.forFeature([User]),
-    JwtModule.register({
-      secret: 'secret',
-      signOptions: { expiresIn: '1d' },
-    }),],
+    CommonModule, // JwtModule
+  ],
   controllers: [UserController],
-  providers: [UserService],
-  exports:[UserService,JwtModule]
+  providers: [
+    {
+      provide : USERSERVICE_INTERFACE,
+      useClass: UserService
+    },
+    UserService
+  ],
+  exports:[UserService , USERSERVICE_INTERFACE ]
 })
 export class UserModule {}

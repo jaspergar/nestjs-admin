@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { CommonModule } from './common/jwt-common.module';
 
 @Module({
   imports: [UserModule,
@@ -18,6 +19,7 @@ import { AuthModule } from './auth/auth.module';
     synchronize : true, // not applicable for production
    }),
   AuthModule,
+  CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

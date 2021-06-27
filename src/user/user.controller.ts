@@ -1,13 +1,39 @@
-import { Controller, Get } from '@nestjs/common';
-import { User } from './models/user.entity';
-import { UserService } from './user.service';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post, Put, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { UserCreateDto } from './dto/user-create.dto';
+import { UserUpdateDto } from './dto/user-update.dto';
+import { UserInterface, USERSERVICE_INTERFACE } from './interfaces/user-service.interface';
+import type { User } from './models/user.entity';
 
+@UseInterceptors(ClassSerializerInterceptor)
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UserController {
-    constructor(private userService: UserService){}
+    constructor(@Inject(USERSERVICE_INTERFACE) private readonly userInterface : UserInterface){}
 
     @Get()
     async all(): Promise<User[]> {
-        return await this.userService.all();
+        return  this.userInterface.all();
     }
+
+    @Post()
+    async create(@Body() body: UserCreateDto): Promise<User> {
+        return  this.userInterface.createUser(body);
+    }
+
+    @Get(':id')
+    async get(@Param('id') id : number): Promise<User> {
+        return this.userInterface.findOneById(id);
+    }
+
+    @Put()
+    async update(@Body() body : UserUpdateDto , @Query('id',ParseIntPipe) id : number) : Promise<User> {
+        return this.userInterface.updateUser(id,body);
+    }
+
+    @Delete(':id')
+    async delete(@Param('id', ParseIntPipe) id : number) : Promise<User> {
+        return this.userInterface.deleteUser(id);
+    }
+
 }
