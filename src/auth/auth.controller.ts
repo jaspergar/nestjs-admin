@@ -3,12 +3,12 @@ import { User } from 'src/user/models/user.entity';
 import { RegisterDto } from './dto/register.dto';
 import {Response , Request} from 'express'
 import { AuthGuard } from './auth.guard';
-import { UserInterface, USERSERVICE_INTERFACE } from 'src/user/interfaces/user-service.interface';
+import { UserServiceInterface, USERSERVICE_INTERFACE } from 'src/user/interfaces/user-service.interface';
 
 @UseInterceptors(ClassSerializerInterceptor) //Interceptor to remove excluded entity (Password)
 @Controller()
 export class AuthController {
-   constructor(@Inject(USERSERVICE_INTERFACE) private userInterface: UserInterface){}
+   constructor(@Inject(USERSERVICE_INTERFACE) private userInterface: UserServiceInterface){}
    
    @Post('register')
    async register(@Body() body : RegisterDto) : Promise<User> {

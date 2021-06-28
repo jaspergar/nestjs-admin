@@ -8,24 +8,53 @@ import { JwtService } from '@nestjs/jwt';
 import {Response , Request} from 'express';
 import { UserCreateDto } from './dto/user-create.dto';
 import { UserUpdateDto } from './dto/user-update.dto';
-import type { UserInterface } from './interfaces/user-service.interface';
+import type { UserServiceInterface } from './interfaces/user-service.interface';
 
 @Injectable()
-export class UserService implements UserInterface{
+export class UserService implements UserServiceInterface{
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,  
     private jwtService: JwtService
   ) {}
 
   //get all user
-  public async all(): Promise<User[]> {
-    return this.userRepository.find();
+  async all(): Promise<User[]> {
+    try{
+      return this.userRepository.find();
+    }
+    catch(err){
+      throw new HttpException(err.message , HttpStatus.REQUEST_TIMEOUT);
+    }
+  }
+
+  //paginate
+  async paginate(page : number = 1) : Promise<any> {
+    const take = 2;
+
+    const [users, total] = await this.userRepository.findAndCount({
+       take,
+       skip: (page - 1) * take
+    });
+
+    return {
+      data : users.map(user => {
+        //spread the user data , and extract the password.
+        //then return the user without the password.
+        const {password, ...data} = user;
+        return data;
+      }) ,
+      meta : {
+        total,
+        page,
+        last_page: Math.ceil(total / take)
+      }
+    }
   }
 
   //get one user by id
-  public async findOneById(id : number): Promise<User>{
+  async findOneById(id : number): Promise<User>{
     try{
-       const user = await  this.userRepository.findOneOrFail(id);
+       const user = await this.userRepository.findOneOrFail(id);
        
         return user;
     }
@@ -35,13 +64,13 @@ export class UserService implements UserInterface{
   }
 
   //register user
-  public async register(registerDTO: RegisterDto): Promise<User> {
+  async register(registerDTO: RegisterDto): Promise<User> {
     try {
       if(registerDTO.password === registerDTO.password_confirm){
         const hashed = await bcrypt.hash(registerDTO.password, 12);
         registerDTO.password = hashed;
   
-        const newUser = this.userRepository.create({ ...registerDTO });
+        const newUser = this.userRepository.create({ ...registerDTO , role : {id : 4} });
         
         return  this.userRepository.save(newUser);
       }else{
@@ -53,7 +82,7 @@ export class UserService implements UserInterface{
   }
 
   //authenticate user
-  public async loginUser(email, pass , response : Response): Promise<User> {
+  async loginUser(email, pass , response : Response): Promise<User> {
       try{
         const {password} = pass
         const user = await this.userRepository.findOne(email);
@@ -77,7 +106,7 @@ export class UserService implements UserInterface{
   }
  
  // Get authenticated user
-   public async getUser(request : Request) : Promise<User> {
+   async getUser(request : Request) : Promise<User> {
        try{
         const cookie = request.cookies['jwt'];
 
@@ -95,11 +124,20 @@ export class UserService implements UserInterface{
    }
 
    //Create user
-   public async createUser(userCreateDto : UserCreateDto) : Promise<User> {
+   async createUser(userCreateDto : UserCreateDto) : Promise<User> {
      try{
       const password = await bcrypt.hash('123456' , 12);
+
+      const {role_id , ...data} = userCreateDto
       
-      const newUser = this.userRepository.create({ ...userCreateDto, password });
+      //adding the hashed password data to the userCreateDto.
+      const newUser = this.userRepository.create(
+          {
+            ...data, 
+            password, 
+            role : {id : role_id}
+          }
+        );
           
       return  this.userRepository.save(newUser);
      
@@ -110,15 +148,25 @@ export class UserService implements UserInterface{
    }
 
    //Update user
-  public async updateUser(id : number , data : UserUpdateDto) : Promise<User>{
+  async updateUser(id : number , userUpdateDto : UserUpdateDto) : Promise<User>{
       try{
-          const user = await this.findOneById(id);
+          // const user = await this.findOneById(id);
 
-          user.first_name = data.first_name;
-          user.last_name = data.last_name;
-          user.email = data.email;
+          // user.first_name = userUpdateDto.first_name;
+          // user.last_name = userUpdateDto.last_name;
+          // user.email = userUpdateDto.email;
 
-          return this.userRepository.save(user);
+          // return this.userRepository.save(user);
+
+          const {role_id , ...data} = userUpdateDto
+
+          await this.userRepository.update(id , {
+            ...data,
+            role: {id : role_id}
+          });
+          
+          return this.findOneById(id);
+         
       }
       catch(err){
         throw new HttpException(err.message , 500);
@@ -126,7 +174,7 @@ export class UserService implements UserInterface{
    }
 
    //delete user
-   public async deleteUser(id : number) : Promise<User>{
+   async deleteUser(id : number) : Promise<User>{
      try{
           const user = await this.findOneById(id);
 

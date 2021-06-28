@@ -11,8 +11,9 @@ import { User } from "../models/user.entity";
 // and provide that token when injecting to an interface type.
 export const USERSERVICE_INTERFACE = 'USER SERVICE INTERFACE';
 
-export interface UserInterface {
+export interface UserServiceInterface {
   all() : Promise<User[]>;
+  paginate(page : number) : Promise<any>;
   findOneById(id : number): Promise<User>;
   register(registerDTO: RegisterDto): Promise<User>;
   loginUser(email, pass , response : Response): Promise<User>;

@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/jwt-common.module';
+import { RoleModule } from './role/role.module';
 
 @Module({
   imports: [UserModule,
@@ -20,6 +21,7 @@ import { CommonModule } from './common/jwt-common.module';
    }),
   AuthModule,
   CommonModule,
+  RoleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

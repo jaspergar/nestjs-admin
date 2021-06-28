@@ -2,18 +2,18 @@ import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Inject, Para
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UserCreateDto } from './dto/user-create.dto';
 import { UserUpdateDto } from './dto/user-update.dto';
-import { UserInterface, USERSERVICE_INTERFACE } from './interfaces/user-service.interface';
+import { UserServiceInterface, USERSERVICE_INTERFACE } from './interfaces/user-service.interface';
 import type { User } from './models/user.entity';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UserController {
-    constructor(@Inject(USERSERVICE_INTERFACE) private readonly userInterface : UserInterface){}
-
+    constructor(@Inject(USERSERVICE_INTERFACE) private readonly userInterface : UserServiceInterface){}
+ 
     @Get()
-    async all(): Promise<User[]> {
-        return  this.userInterface.all();
+    async all(@Query('page') page: number): Promise<User[]> {
+        return  this.userInterface.paginate(page);
     }
 
     @Post()
