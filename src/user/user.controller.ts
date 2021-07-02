@@ -27,8 +27,8 @@ export class UserController {
     }
 
     @Put()
-    async update(@Body() body : UserUpdateDto , @Query('id',ParseIntPipe) id : number) : Promise<User> {
-        return this.userInterface.updateUser(id,body);
+    async update(@Body() body : UserUpdateDto, @Query('id',ParseIntPipe) id : number) : Promise<User> {
+        return this.userInterface.updateUser(body,id);
     }
 
     @Delete(':id')

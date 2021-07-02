@@ -1,3 +1,4 @@
+import { RoleUpdateDto } from "../dto/role-update.dto";
 import { RoleDto } from "../dto/role.dto";
 import { Role } from "../models/role.entity";
 
@@ -10,9 +11,9 @@ export interface RoleServiceInterface {
 
     findOneById(id : number) : Promise<Role> ;
 
-    createRole(roleDto : RoleDto) : Promise<Role> ;
+    createRole(roleDto : RoleDto , permissionIds : number[]) : Promise<Role> ;
 
-    updateRole(id: number , data : RoleDto) : Promise<Role> ;
+    updateRole(id: number , data : RoleUpdateDto , permissionIds : number[]) : Promise<Role> ;
 
     deleteRole(id : number) : Promise<Role> ;
 }

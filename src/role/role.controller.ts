@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Inject, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
+import { RoleUpdateDto } from './dto/role-update.dto';
 import { RoleDto } from './dto/role.dto';
 import { RoleServiceInterface, ROLESERVICE_INTERFACE } from './interfaces/role-service.interface';
 import { Role } from './models/role.entity';
@@ -19,13 +20,13 @@ export class RoleController {
     }
 
     @Post()
-    async create(@Body() body : RoleDto) : Promise<Role> {
-        return this.roleService.createRole(body);
+    async create(@Body() body : RoleDto , @Body('permissions') permissionIds : number[]) : Promise<Role> {
+        return this.roleService.createRole(body , permissionIds);
     }
 
     @Put()
-    async update(@Query('id' , ParseIntPipe) id : number , @Body() data : RoleDto) : Promise<Role> {
-        return this.roleService.updateRole(id , data);
+    async update(@Query('id' , ParseIntPipe) id : number , @Body() data : RoleUpdateDto , @Body('permissions') permissionIds: number[] ) : Promise<Role> {
+        return this.roleService.updateRole(id , data , permissionIds);
     }
 
     @Delete(':id')

@@ -19,6 +19,6 @@ export interface UserServiceInterface {
   loginUser(email, pass , response : Response): Promise<User>;
   getUser(request : Request) : Promise<User> ;
   createUser(userCreateDto : UserCreateDto) : Promise<User>;
-  updateUser(id : number , data : UserUpdateDto) : Promise<User>;
+  updateUser(data : UserUpdateDto,id : number) : Promise<User>;
   deleteUser(id : number) : Promise<User>;
 }

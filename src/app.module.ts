@@ -6,6 +6,8 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/jwt-common.module';
 import { RoleModule } from './role/role.module';
+import { PermissionModule } from './permission/permission.module';
+import { AbstractService } from './common/abstract.service';
 
 @Module({
   imports: [UserModule,
@@ -22,8 +24,9 @@ import { RoleModule } from './role/role.module';
   AuthModule,
   CommonModule,
   RoleModule,
+  PermissionModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, AbstractService],
 })
 export class AppModule {}

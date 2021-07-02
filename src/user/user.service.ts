@@ -54,7 +54,7 @@ export class UserService implements UserServiceInterface{
   //get one user by id
   async findOneById(id : number): Promise<User>{
     try{
-       const user = await this.userRepository.findOneOrFail(id);
+       const user = await this.userRepository.findOneOrFail(id , {relations : ['role']});
        
         return user;
     }
@@ -148,7 +148,7 @@ export class UserService implements UserServiceInterface{
    }
 
    //Update user
-  async updateUser(id : number , userUpdateDto : UserUpdateDto) : Promise<User>{
+  async updateUser( userUpdateDto : UserUpdateDto,id : number ) : Promise<User>{
       try{
           // const user = await this.findOneById(id);
 
