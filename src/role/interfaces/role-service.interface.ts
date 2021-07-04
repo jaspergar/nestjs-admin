@@ -1,3 +1,4 @@
+import { PaginatedResultInterface } from "src/common/paginated-result.interface";
 import { RoleUpdateDto } from "../dto/role-update.dto";
 import { RoleDto } from "../dto/role.dto";
 import { Role } from "../models/role.entity";
@@ -9,11 +10,13 @@ export interface RoleServiceInterface {
 
     all() : Promise<Role[]> ;
 
-    findOneById(id : number) : Promise<Role> ;
+    paginate(page : number , relation : string) : Promise<any>;
 
-    createRole(roleDto : RoleDto , permissionIds : number[]) : Promise<Role> ;
+    findOneById(id : number , relation : string) : Promise<Role> ;
 
-    updateRole(id: number , data : RoleUpdateDto , permissionIds : number[]) : Promise<Role> ;
+    create(roleDto : RoleDto , permissionIds : number[]) : Promise<Role> ;
 
-    deleteRole(id : number) : Promise<Role> ;
+    update(id: number , data : RoleUpdateDto , permissionIds : number[]) : Promise<Role> ;
+
+    delete(id : number , relation : string) : Promise<Role> ;
 }

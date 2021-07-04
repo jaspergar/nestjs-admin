@@ -10,27 +10,27 @@ export class RoleController {
     constructor(@Inject(ROLESERVICE_INTERFACE) private readonly roleService : RoleServiceInterface){}
     
     @Get()
-    async all() : Promise<Role[]> {
-        return this.roleService.all();
+    async all(@Query('page') page: number) : Promise<Role[]> {
+        return this.roleService.paginate(page , 'permissions');
     }
 
     @Get('/:id')
-    async get(@Param('id') id : number) : Promise<Role>{
-        return this.roleService.findOneById(id);
+    async getRoleById(@Param('id') id : number) : Promise<Role>{
+        return this.roleService.findOneById(id , 'permissions');
     }
 
     @Post()
-    async create(@Body() body : RoleDto , @Body('permissions') permissionIds : number[]) : Promise<Role> {
-        return this.roleService.createRole(body , permissionIds);
+    async createRole(@Body() body : RoleDto , @Body('permissions') permissionIds : number[]) : Promise<Role> {
+        return this.roleService.create(body , permissionIds);
     }
 
     @Put()
-    async update(@Query('id' , ParseIntPipe) id : number , @Body() data : RoleUpdateDto , @Body('permissions') permissionIds: number[] ) : Promise<Role> {
-        return this.roleService.updateRole(id , data , permissionIds);
+    async updateRole(@Query('id' , ParseIntPipe) id : number , @Body() data : RoleUpdateDto , @Body('permissions') permissionIds: number[] ) : Promise<Role> {
+        return this.roleService.update(id , data , permissionIds);
     }
 
     @Delete(':id')
-    async delete(@Param('id', ParseIntPipe) id : number) : Promise<Role> {
-        return this.roleService.deleteRole(id);
+    async deleteRole(@Param('id', ParseIntPipe) id : number) : Promise<Role> {
+        return this.roleService.delete(id , 'permissions');
     }
 }

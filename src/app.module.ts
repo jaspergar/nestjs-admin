@@ -27,6 +27,6 @@ import { AbstractService } from './common/abstract.service';
   PermissionModule,
   ],
   controllers: [AppController],
-  providers: [AppService, AbstractService],
+  providers: [AppService],
 })
 export class AppModule {}

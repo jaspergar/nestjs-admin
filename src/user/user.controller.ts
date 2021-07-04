@@ -12,28 +12,28 @@ export class UserController {
     constructor(@Inject(USERSERVICE_INTERFACE) private readonly userInterface : UserServiceInterface){}
  
     @Get()
-    async all(@Query('page') page: number): Promise<User[]> {
-        return  this.userInterface.paginate(page);
+    async allUser(@Query('page') page: number): Promise<User[]> {
+        return  this.userInterface.paginate(page , 'role');
     }
 
     @Post()
-    async create(@Body() body: UserCreateDto): Promise<User> {
-        return  this.userInterface.createUser(body);
+    async createUser(@Body() body: UserCreateDto): Promise<User> {
+        return  this.userInterface.create(body);
     }
 
     @Get(':id')
-    async get(@Param('id') id : number): Promise<User> {
-        return this.userInterface.findOneById(id);
+    async getUserById(@Param('id') id : number): Promise<User> {
+        return this.userInterface.findOneById(id , 'role');
     }
 
     @Put()
-    async update(@Body() body : UserUpdateDto, @Query('id',ParseIntPipe) id : number) : Promise<User> {
-        return this.userInterface.updateUser(body,id);
+    async updateUser(@Body() body : UserUpdateDto, @Query('id',ParseIntPipe) id : number) : Promise<User> {
+        return this.userInterface.update(body,id);
     }
 
     @Delete(':id')
-    async delete(@Param('id', ParseIntPipe) id : number) : Promise<User> {
-        return this.userInterface.deleteUser(id);
+    async deleteUser(@Param('id', ParseIntPipe) id : number) : Promise<User> {
+        return this.userInterface.delete(id , 'role');
     }
 
 }

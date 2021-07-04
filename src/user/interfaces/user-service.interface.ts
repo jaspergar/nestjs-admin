@@ -1,5 +1,6 @@
 import { Response , Request} from "express";
 import { RegisterDto } from "src/auth/dto/register.dto";
+import { PaginatedResultInterface } from "src/common/paginated-result.interface";
 import { UserCreateDto } from "../dto/user-create.dto";
 import { UserUpdateDto } from "../dto/user-update.dto";
 import { User } from "../models/user.entity";
@@ -12,13 +13,13 @@ import { User } from "../models/user.entity";
 export const USERSERVICE_INTERFACE = 'USER SERVICE INTERFACE';
 
 export interface UserServiceInterface {
-  all() : Promise<User[]>;
-  paginate(page : number) : Promise<any>;
-  findOneById(id : number): Promise<User>;
+  all(relation : string) : Promise<User[]>;
+  paginate(page : number , relation : string) : Promise<any>;
+  findOneById(id : number , relation : string): Promise<User>;
   register(registerDTO: RegisterDto): Promise<User>;
   loginUser(email, pass , response : Response): Promise<User>;
   getUser(request : Request) : Promise<User> ;
-  createUser(userCreateDto : UserCreateDto) : Promise<User>;
-  updateUser(data : UserUpdateDto,id : number) : Promise<User>;
-  deleteUser(id : number) : Promise<User>;
+  create(userCreateDto : UserCreateDto) : Promise<User>;
+  update(data : UserUpdateDto,id : number) : Promise<User>;
+  delete(id : number , relation : string) : Promise<User>;
 }

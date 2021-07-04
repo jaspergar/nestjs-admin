@@ -9,57 +9,30 @@ import {Response , Request} from 'express';
 import { UserCreateDto } from './dto/user-create.dto';
 import { UserUpdateDto } from './dto/user-update.dto';
 import type { UserServiceInterface } from './interfaces/user-service.interface';
+import { AbstractService } from 'src/common/abstract.service';
+import { PaginatedResultInterface } from 'src/common/paginated-result.interface';
 
 @Injectable()
-export class UserService implements UserServiceInterface{
+export class UserService extends AbstractService implements UserServiceInterface{
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,  
     private jwtService: JwtService
-  ) {}
-
-  //get all user
-  async all(): Promise<User[]> {
-    try{
-      return this.userRepository.find();
-    }
-    catch(err){
-      throw new HttpException(err.message , HttpStatus.REQUEST_TIMEOUT);
-    }
+  ) {
+    super(userRepository);
   }
 
   //paginate
-  async paginate(page : number = 1) : Promise<any> {
-    const take = 2;
-
-    const [users, total] = await this.userRepository.findAndCount({
-       take,
-       skip: (page - 1) * take
-    });
-
+  async paginate(page : number = 1 , relation : string) : Promise<PaginatedResultInterface> {
+    // calling the function paginate on the parent class which is an abstract class and returning the data and meta
+    const {data , meta} = await super.paginate(page , relation)
     return {
-      data : users.map(user => {
+      data : data.map(user => {
         //spread the user data , and extract the password.
         //then return the user without the password.
         const {password, ...data} = user;
         return data;
       }) ,
-      meta : {
-        total,
-        page,
-        last_page: Math.ceil(total / take)
-      }
-    }
-  }
-
-  //get one user by id
-  async findOneById(id : number): Promise<User>{
-    try{
-       const user = await this.userRepository.findOneOrFail(id , {relations : ['role']});
-       
-        return user;
-    }
-    catch(err){ 
-      throw new NotFoundException(`No user found in id ${id}`)
+      meta
     }
   }
 
@@ -114,7 +87,7 @@ export class UserService implements UserServiceInterface{
         const data = await this.jwtService.verifyAsync(cookie);
  
         //Find the user with the same id
-        const user = this.findOneById(data['id']);
+        const user = this.findOneById(data['id'] , 'role');
  
         return user;
        }
@@ -124,7 +97,7 @@ export class UserService implements UserServiceInterface{
    }
 
    //Create user
-   async createUser(userCreateDto : UserCreateDto) : Promise<User> {
+   async create(userCreateDto : UserCreateDto) : Promise<User> {
      try{
       const password = await bcrypt.hash('123456' , 12);
 
@@ -148,7 +121,7 @@ export class UserService implements UserServiceInterface{
    }
 
    //Update user
-  async updateUser( userUpdateDto : UserUpdateDto,id : number ) : Promise<User>{
+  async update( userUpdateDto : UserUpdateDto,id : number ) : Promise<User>{
       try{
           // const user = await this.findOneById(id);
 
@@ -165,23 +138,11 @@ export class UserService implements UserServiceInterface{
             role: {id : role_id}
           });
           
-          return this.findOneById(id);
+          return this.findOneById(id , 'role');
          
       }
       catch(err){
         throw new HttpException(err.message , 500);
       }
-   }
-
-   //delete user
-   async deleteUser(id : number) : Promise<User>{
-     try{
-          const user = await this.findOneById(id);
-
-          return this.userRepository.remove(user);
-     }
-     catch(err){
-        throw new HttpException(err.message, HttpStatus.OK);
-     }
    }
 }
