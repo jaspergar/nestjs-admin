@@ -49,12 +49,18 @@ export abstract class AbstractService {
   //get one data by id
   async findOneById(id : number , relation?: string): Promise<any>{
     try{
-       const data = await this.repository.findOneOrFail(id , {relations : [relation]});
-       
+        let data;
+        
+        if(relation){
+          data = await this.repository.findOneOrFail(id , {relations : [relation]});
+        }else{
+          data = await this.repository.findOneOrFail(id);
+        }
+
         return data;
     }
     catch(err){ 
-      throw new NotFoundException(`No user found in id ${id}`)
+      throw new NotFoundException(`No data found in id ${id}`)
     }
   }
 
@@ -68,7 +74,7 @@ export abstract class AbstractService {
       return this.repository.save(newData);
       
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.OK);
+      throw new HttpException(err.message, HttpStatus.REQUEST_TIMEOUT);
     }
   }
     
@@ -81,7 +87,7 @@ export abstract class AbstractService {
          return this.repository.remove(user);
     }
     catch(err){
-       throw new HttpException(err.message, HttpStatus.OK);
+       throw new HttpException(err.message, HttpStatus.REQUEST_TIMEOUT);
     }
   }
 

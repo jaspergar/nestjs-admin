@@ -8,11 +8,11 @@ import { UserServiceInterface, USERSERVICE_INTERFACE } from 'src/user/interfaces
 @UseInterceptors(ClassSerializerInterceptor) //Interceptor to remove excluded entity (Password)
 @Controller()
 export class AuthController {
-   constructor(@Inject(USERSERVICE_INTERFACE) private userInterface: UserServiceInterface){}
+   constructor(@Inject(USERSERVICE_INTERFACE) private userServiceInterface: UserServiceInterface){}
    
    @Post('register')
    async register(@Body() body : RegisterDto) : Promise<User> {
-       return this.userInterface.register(body);
+       return this.userServiceInterface.register(body);
    }
 
    @Post('login')
@@ -21,14 +21,14 @@ export class AuthController {
        @Body('password') password: string,
        @Res({passthrough:true}) response : Response //to send httponly cookie
    ) : Promise<User> {
-      return await this.userInterface.loginUser({email} , {password} , response);
+      return await this.userServiceInterface.loginUser({email} , {password} , response);
    }
    
    // Get authenticated user 
    @UseGuards(AuthGuard)
    @Get('user')
    async user(@Req() request : Request) : Promise<User>{
-       return this.userInterface.getUser(request);
+       return this.userServiceInterface.getAuthUser(request);
    }
 
    @UseGuards(AuthGuard) // Restrict access to the routes

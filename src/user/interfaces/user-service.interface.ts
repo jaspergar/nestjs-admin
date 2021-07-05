@@ -18,7 +18,9 @@ export interface UserServiceInterface {
   findOneById(id : number , relation : string): Promise<User>;
   register(registerDTO: RegisterDto): Promise<User>;
   loginUser(email, pass , response : Response): Promise<User>;
-  getUser(request : Request) : Promise<User> ;
+  getAuthUser(request : Request) : Promise<User> ;
+  updateAuthenticatedUserInfo(userUpdateDto : UserUpdateDto , request : Request) : Promise<User>;
+  updateAuthenticatedUserPassword(password : string , password_confirm : string , request : Request) : Promise<User>
   create(userCreateDto : UserCreateDto) : Promise<User>;
   update(data : UserUpdateDto,id : number) : Promise<User>;
   delete(id : number , relation : string) : Promise<User>;

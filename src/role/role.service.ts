@@ -42,8 +42,9 @@ export class RoleService extends AbstractService implements RoleServiceInterface
            const permIds  = [];
 
            const role = await this.findOneById(id , 'permissions');
-           role.name = data.name
 
+           role.name = data.name
+           
            if(permissionIds){
 
             const pIds = permissionIds.map(id => ({id}));

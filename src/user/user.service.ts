@@ -79,7 +79,7 @@ export class UserService extends AbstractService implements UserServiceInterface
   }
  
  // Get authenticated user
-   async getUser(request : Request) : Promise<User> {
+   async getAuthUser(request : Request) : Promise<User> {
        try{
         const cookie = request.cookies['jwt'];
 
@@ -96,7 +96,45 @@ export class UserService extends AbstractService implements UserServiceInterface
        }
    }
 
+    //update authenticated user
+     async updateAuthenticatedUserInfo(userUpdateDto : UserUpdateDto , request : Request) : Promise<User>{
+          try {
+             const authenticatedUser = await this.getAuthUser(request);
+
+             authenticatedUser.first_name = userUpdateDto.first_name;
+             authenticatedUser.last_name = userUpdateDto.last_name;
+
+             return this.userRepository.save(authenticatedUser);
+          }
+          catch(err){
+            throw new HttpException(err.message, 500);
+          }
+     }
+
+    //update authenticated user's password
+    async updateAuthenticatedUserPassword(password : string , password_confirm : string , request : Request) : Promise<User>{
+      try {
+        if(password === password_confirm){
+          const hashed = await bcrypt.hash(password, 12);
+
+          const authenticatedUser = await this.getAuthUser(request);
+          const authUserId  = authenticatedUser.id
+
+          await this.userRepository.update(authUserId , {
+            password : hashed
+          });
+
+          return authenticatedUser;
+        }else{
+         throw new BadRequestException('Password do not match');
+        }
+      } catch (err) {
+        throw new HttpException(err.message , 500);
+      }
+    }
+
    //Create user
+   //Override the abstract class 
    async create(userCreateDto : UserCreateDto) : Promise<User> {
      try{
       const password = await bcrypt.hash('123456' , 12);
